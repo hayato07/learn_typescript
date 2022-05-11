@@ -1,3 +1,9 @@
+# Reactの特徴
+
+1. 仮想DOM(仮想DOMを操作し、その変更をDOMに反映する)
+2. 宣言的UI
+3. コンポーネントベース(組み合わせてアプリを作る)
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
