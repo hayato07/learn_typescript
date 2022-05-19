@@ -310,7 +310,7 @@ ed.emit("end", {});
 
 // 3-4
 
-type Action = 
+type Action =
     | {
         type: "increment";
         amount: number;
@@ -326,30 +326,30 @@ type Action =
 
 const reducer = (state: number, action: Action) => {
     switch (action.type) {
-      case "increment":
-        return state + action.amount;
-      case "decrement":
-        return state - action.amount;
-      case "reset":
-        return action.value;
+        case "increment":
+            return state + action.amount;
+        case "decrement":
+            return state - action.amount;
+        case "reset":
+            return action.value;
     }
-  };
-  
-  // 使用例
-  reducer(100, {
-      type: 'increment',
-      amount: 10,
-  }) === 110;
-  reducer(100, {
-      type: 'decrement',
-      amount: 55,
-  }) === 45;
-  reducer(500, {
-      type: 'reset',
-      value: 0,
-  }) === 0;
-  
-  // エラー例
+};
+
+// 使用例
+reducer(100, {
+    type: 'increment',
+    amount: 10,
+}) === 110;
+reducer(100, {
+    type: 'decrement',
+    amount: 55,
+}) === 45;
+reducer(500, {
+    type: 'reset',
+    value: 0,
+}) === 0;
+
+// エラー例
 //   reducer(0,{
 //       type: 'increment',
 //       value: 100,
@@ -383,27 +383,229 @@ const v6: number = f1();
 // これが、 conditional type => T extends { foo: infer E }
 // Tがfooプロパティを持つならば、そのプロパティの型をEとして取得する
 function getFoo<T extends object>(
-        obj: T
-    ): T extends { foo: infer E } ? E : unknown {
-        // return obj.foo;
-        return (obj as any).foo;
-  }
-  
-  // 使用例
-  // numはnumber型
-  const num = getFoo({
+    obj: T
+): T extends { foo: infer E } ? E : unknown {
+    // return obj.foo;
+    return (obj as any).foo;
+}
+
+// 使用例
+// numはnumber型
+const num = getFoo({
     foo: 123
-  });
-  // strはstring型
-  const str = getFoo({
+});
+// strはstring型
+const str = getFoo({
     foo: "hoge",
     bar: 0
-  });
-  // unkはunknown型
-  const unk = getFoo({
+});
+// unkはunknown型
+const unk = getFoo({
     hoge: true
-  });
-  
-  // エラー例
+});
+
+// エラー例
 //   getFoo(123);
-  getFoo(null); // こっちはエラーにならない。。
+getFoo(null); // こっちはエラーにならない。。
+
+// 4-2
+
+function giveId2<T>(obj: T): Pick<T, Exclude<keyof T, "id">> & { id: string } {
+    const id = "本当はランダムがいいけどここではただの文字列";
+    return {
+        ...obj,
+        id
+    };
+}
+
+// 使用例
+/*
+ * obj1の型は { foo: number; id: string } 型
+ */
+const obj1_2 = giveId2({ foo: 123 });
+/*
+ * obj2の型は { num : number; id: string } 型
+ */
+const obj2_2 = giveId2({
+    num: 0,
+    id: 100,
+});
+// obj2のidはstring型なので別の文字列を代入できる
+obj2.id = '';
+
+// 4-3 さっぱりわからん
+
+interface EventPayloads {
+    start: {
+        user: string;
+    };
+    stop: {
+        user: string;
+        after: number;
+    };
+    end: {};
+}
+
+type Spread<Ev, EvOrig, E> = Ev extends keyof E
+    ? EvOrig[] extends Ev[]
+    ? E[Ev]
+    : never
+    : never;
+class EventDischarger2<E> {
+    emit<Ev extends keyof E>(eventName: Ev, payload: Spread<Ev, Ev, E>) {
+        // 省略
+    }
+}
+
+// 使用例
+const ed2 = new EventDischarger2<EventPayloads>();
+ed.emit("start", {
+    user: "user1"
+});
+ed.emit("stop", {
+    user: "user1",
+    after: 3
+});
+ed.emit("end", {});
+
+// エラー例
+ed.emit<"start" | "stop">("stop", {
+    user: "user1"
+});
+
+// 4-4 これは理解できた！
+
+// 使用例
+
+// 元のデータ
+type PartiallyPartial<T, K extends keyof T> = Partial<Pick<T, K>> & Pick<T, Exclude<keyof T, K>>;
+
+interface Data2 {
+    foo: number;
+    bar: string;
+    baz: string;
+}
+/*
+ * T1は { foo?: number; bar?: string; baz: string } 型
+ */
+type T12 = PartiallyPartial<Data2, "foo" | "bar">;
+
+
+// 4-5 パズル感がでてきてる
+
+type PartiallyPartial2<T, K extends keyof T> = Partial<Pick<T, K>> & Pick<T, Exclude<keyof T, K>>;
+
+type AtLeastOne<T> = Spread2<T, keyof T>;
+type Spread2<T, K extends keyof T> = K extends keyof T
+    ? PartiallyPartial2<T, Exclude<keyof T, K>>
+    : never;
+
+// 使用例
+interface Options {
+    foo: number;
+    bar: string;
+    baz: boolean;
+}
+function test(options: AtLeastOne<Options>) {
+    const { foo, bar, baz } = options;
+    // 省略
+}
+test({
+    foo: 123,
+    bar: "bar"
+});
+test({
+    baz: true
+});
+
+// エラー例
+test({});
+
+
+// 4-6
+
+type Page =
+    | {
+        page: "top";
+    }
+    | {
+        page: "mypage";
+        userName: string;
+    }
+    | {
+        page: "ranking";
+        articles: string[];
+    };
+
+// 関数名までも型からもってこれるだと。。。
+type PageGenerators = {
+    [P in Page["page"]]: (page: Extract<Page, { page: P }>) => string
+};
+
+const pageGenerators: PageGenerators = {
+    top: () => "<p>top page</p>",
+    mypage: ({ userName }) => `<p>Hello, ${userName}!</p>`,
+    ranking: ({ articles }) =>
+        `<h1>ranking</h1>
+         <ul>
+        ${articles.map(name => `<li>${name}</li>`).join("")}</ul>`
+};
+const renderPage = (page: Page) => pageGenerators[page.page](page as any);
+
+// 4-7 さっぱりわからなかった
+
+type KeysOfType<Obj, Val> = {
+    [K in keyof Obj]-?: Obj[K] extends Val ? K : never
+}[keyof Obj];
+
+// 使用例
+type Data = {
+    foo: string;
+    bar: number;
+    baz: boolean;
+
+    hoge?: string;
+    fuga: string;
+    piyo?: number;
+};
+
+// "foo" | "fuga"
+// ※ "hoge" は string | undefiendなので含まない
+type StringKeys = KeysOfType<Data, string>;
+
+function useNumber<Obj>(obj: Obj, key: KeysOfType<Obj, number>) {
+    // ヒント: ここはanyを使わざるを得ない
+    const num: number = (obj as any)[key];
+    return num * 10;
+}
+
+declare const data: Data;
+
+// これはOK
+useNumber(data, "bar");
+// これは型エラー
+useNumber(data, "baz");
+
+// 4-8
+type PickUndefined<Obj> = {
+    [K in keyof Obj]-?: undefined extends Obj[K] ? K : never
+}[keyof Obj];
+
+type MapToNever<Obj> = {
+    [K in keyof Obj]: never
+}
+
+type OptionalKeys<Obj> = PickUndefined<MapToNever<Obj>>;
+
+// 使用例
+type Data4 = {
+    foo: string;
+    bar?: number;
+    baz?: boolean;
+
+    hoge: undefined;
+    piyo?: undefined;
+};
+
+// "bar" | "baz" | "piyo"
+type T = OptionalKeys<Data>;
