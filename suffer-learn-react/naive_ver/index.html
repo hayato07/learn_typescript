@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <link rel="stylesheet" href="https://fonts.xz.style/serve/inter.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css" />
+    <!-- <link rel="stylesheet" type="text/css" href="style.css" /> -->
+    <title>naive todo</title>
+</head>
+
+<body>
+    <form onsubmit="return handleFormSubmit(); return false;">
+        <input id="task-input" />
+        <button type="button" onclick="handleFormSubmit();">登録する</button>
+    </form>
+    <ul id="todos"></ul>
+    <script src="index.js"></script>
+</body>
+
+</html>
