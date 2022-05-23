@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <link rel="stylesheet" href="https://fonts.xz.style/serve/inter.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css" />
+    <!-- <link rel="stylesheet" type="text/css" href="style.css" /> -->
+    <title>mvc todo</title>
+
+    <style>
+        .checked {
+            text-decoration: line-through;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        label {
+            margin-left: 16px;
+            margin-right: 16px;
+        }
+
+        input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <form id="task-send-form">
+        <input id="task-input" />
+        <button>登録する</button>
+    </form>
+    <ul id="todos"></ul>
+    <script src="index.js"></script>
+</body>
+
+</html>
